@@ -1,11 +1,20 @@
 #!/bin/bash
+sinks=($(pacmd list-sinks | sed -n 's/.*index\: \([0-9]\+\)/\1/p'))
 current_sink=$(pacmd list-sinks | sed -n 's/.*\*.*index\: \([0-9]\+\)/\1/p')
-nb_sink=$(pacmd list-sinks | sed -n 's/.*name\: <\(.*\)>/\1/p'| wc -l)
-next_sink=$((($current_sink+1) % $nb_sink))
+
+
+for i in "${!sinks[@]}"; do
+   if [[ "${sinks[$i]}" = "${current_sink}" ]]; then
+       curent_sink_id="${i}";
+   fi
+done
+
+nb_sink=${#sinks[@]} 
+next_sink_id=$((($curent_sink_id+1) % $nb_sink))
 
 sinks_in=$(pacmd list-sink-inputs | sed -n 's/.*index\: \([0-9]\+\)/\1/p')
 
-pacmd set-default-sink $next_sink
+pacmd set-default-sink ${sinks[$next_sink_id]}
 for t in $sinks_in; do
-  pacmd move-sink-input $t $next_sink
+  pacmd move-sink-input $t ${sinks[$next_sink_id]}
 done
