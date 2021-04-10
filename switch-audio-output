@@ -1,0 +1,11 @@
+#!/bin/bash
+current_sink=$(pacmd list-sinks | sed -n 's/.*\*.*index\: \([0-9]\+\)/\1/p')
+nb_sink=$(pacmd list-sinks | sed -n 's/.*name\: <\(.*\)>/\1/p'| wc -l)
+next_sink=$((($current_sink+1) % $nb_sink))
+
+sinks_in=$(pacmd list-sink-inputs | sed -n 's/.*index\: \([0-9]\+\)/\1/p')
+
+pacmd set-default-sink $next_sink
+for t in $sinks_in; do
+  pacmd move-sink-input $t $next_sink
+done
